@@ -4,9 +4,102 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="./main.js" defer></script>
+    <link rel="icon" href="./googleDocs.png" type="image/x-icon" />
     <title>Google Classroom</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #search-container {
+        margin: 20px 0;
+        width: 100%;
+        max-width: 600px;
+      }
+      #search-input {
+        width: 100%;
+        padding: 10px 15px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        outline: none;
+        transition: border-color 0.3s;
+      }
+      #search-input:focus {
+        border-color: #007bff;
+      }
+      #googleh1 {
+        font-family: Arial, sans-serif;
+        font-size: 100px;
+        font-weight: bold;
+        display: inline-block;
+        padding: 0;
+      }
+      #googleh1 span:nth-child(1) {
+        color: #4285f4;
+      }
+      #googleh1 span:nth-child(2) {
+        color: #ea4335;
+      }
+      #googleh1 span:nth-child(3) {
+        color: #fbbc05;
+      }
+      #googleh1 span:nth-child(4) {
+        color: #4285f4;
+      }
+      #googleh1 span:nth-child(5) {
+        color: #34a853;
+      }
+      #googleh1 span:nth-child(6) {
+        color: #ea4335;
+      }
+      #search-container {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+        width: 100%;
+        max-width: 600px;
+      }
+      #search-container button {
+        padding: 10px 20px;
+        font-size: 16px;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+      #search-container button:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+      }
+      #search-container button:active {
+        background-color: #004085;
+        transform: scale(1);
+      }
+    </style>
   </head>
   <body>
+    <h1 id="googleh1">
+      <span>T</span><span>o</span><span>o</span><span>D</span><span>l</span
+      ><span>e</span>
+    </h1>
+    <div id="search-container">
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Search..."
+        aria-label="Search"
+      />
+      <button id="SearchBtn">Search</button>
+    </div>
     <div id="results"></div>
     <iframe
       id="site-frame"
@@ -14,5 +107,22 @@
       height="900px"
       style="display: none"
     ></iframe>
+
+    <script>
+      let SearchBtn = document.getElementById("SearchBtn");
+      let SearchBar = document.getElementById("search-input");
+      let GoogleLogo = document.getElementById("googleh1");
+
+      SearchBtn.addEventListener("click", () => {
+        let searchValue = SearchBar.value;
+
+        window.location.href = `${window.location.href}search?q=${searchValue}`;
+      });
+    </script>
+    <script>
+      if (window.top !== window.self) {
+        window.stop();
+      }
+    </script>
   </body>
 </html>

@@ -1,12 +1,12 @@
 import express from "express";
 import path from "path";
-import { fileURLToPath } from "url"; // FIXED: Corrected typo here
+import { fileURLToPath } from "url";
 import * as cheerio from "cheerio";
 import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url); // FIXED: Corrected typo here
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let server = express();
@@ -50,45 +50,57 @@ server.get("/api/search", async (req, res) => {
 });
 
 server.get("/proxy", async (req, res) => {
-  // res.setHeader( // Original line, not needed after fixes below
-  //   "Content-Security-Policy",
-  //   "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
-  // );
-
   const targetUrl = req.query.url;
   if (!targetUrl) return res.status(400).send("Missing URL");
 
   try {
     const response = await axios.get(targetUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
-      responseType: "arraybuffer", // FIXED: Crucial for handling various encodings
+      headers: { "User-Agent": "Mozilla/5.0" },
+      responseType: "arraybuffer",
     });
 
-    // Pass through Content-Type from the original response
+    delete response.headers["x-frame-options"];
+    delete response.headers["content-security-policy"];
+
     const contentType = response.headers["content-type"] || "text/html";
     res.setHeader("Content-Type", contentType);
 
-    res.removeHeader("X-Frame-Options");
-    // FIXED: Removed the problematic Content-Security-Policy header setting here
-    res.removeHeader("Content-Security-Policy"); // Remove if present from original server
+    res.setHeader("X-Frame-Options", "");
+    res.setHeader("Content-Security-Policy", "");
 
     let html = response.data.toString("utf8"); // Assume UTF-8 for initial processing
 
-    html = html.replace(
-      /<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*\/?>/gi, // Added /? for self-closing tags
-      ""
-    );
-    html = html.replace(
-      /<meta[^>]+http-equiv=["']X-Frame-Options["'][^>]*\/?>/gi, // Added /? for self-closing tags
-      ""
-    );
-    // Also remove referrer meta tags which can sometimes interfere
-    html = html.replace(/<meta[^>]+name=["']referrer["'][^>]*\/?>/gi, "");
-
     const baseTag = `<base href="${targetUrl}">`;
-    // FIXED: More robust base tag injection
+
+    // AFTER FETCHING THE TARGET PAGE AND LOADING `html` STRING:
+    html = html
+
+      .replace(
+        /<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*>/gi,
+        ""
+      )
+
+      .replace(/<meta[^>]+http-equiv=["']X-Frame-Options["'][^>]*>/gi, "")
+
+      .replace(/<meta[^>]+name=["']referrer["'][^>]*>/gi, "");
+
+    // INJECT BASE TAG FOR RELATIVE LINKS
+    if (html.includes("<head>")) {
+      html = html.replace(/<head[^>]*>/i, (match) => `${match}\n${baseTag}`);
+    } else {
+      html = `<head>${baseTag}</head>` + html;
+    }
+
+    html = html.replace(/<a\s+[^>]*href="([^"]+)"/gi, (match, href) => {
+      if (href.startsWith("http")) {
+        return match.replace(href, `/proxy?url=${encodeURIComponent(href)}`);
+      }
+
+      const absolute = new URL(href, targetUrl).toString();
+
+      return match.replace(href, `/proxy?url=${encodeURIComponent(absolute)}`);
+    });
+
     if (html.includes("<head>")) {
       html = html.replace(/<head[^>]*>/i, (match) => `${match}\n${baseTag}`);
     } else if (html.includes("<html>")) {
