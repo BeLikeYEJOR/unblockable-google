@@ -3,7 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url"; // FIXED: Corrected typo here
 import * as cheerio from "cheerio";
 import axios from "axios";
-import fs from "fs";
+import dotenv from "dotenv";
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url); // FIXED: Corrected typo here
 const __dirname = path.dirname(__filename);
@@ -28,43 +29,18 @@ server.get("/api/search", async (req, res) => {
         params: { q: query },
         headers: {
           Accept: "application/json",
-          "X-Subscription-Token": "YOUR_API_KEY_HERE",
+          "X-Subscription-Token": process.env.BRAVE_API,
         },
       }
     );
 
     const $ = cheerio.load(response.data);
 
-    let results = [];
-    $(".result").each((i, el) => {
-      const a = $(el).find("a.result__a");
-      const title = a.text();
-      const duckUrl = a.attr("href");
-      const snippet = $(el).find(".result__snippet").text();
-
-      // FIXED: Ensure duckUrl exists before processing
-      //   if (!duckUrl) {
-      //       console.warn("Skipping result: DuckDuckGo URL not found for element", $(el).html());
-      //       return;
-      //   }
-
-      const urlParams = new URLSearchParams(duckUrl.split("?")[1]);
-      const realUrl = urlParams.get("uddg");
-
-      // FIXED: Only push result if realUrl is successfully extracted
-      if (realUrl) {
-        results.push({
-          title,
-          url: realUrl,
-          snippet,
-        });
-      } else {
-        console.warn(
-          "Skipping result: Could not extract real URL from DuckDuckGo URL:",
-          duckUrl
-        );
-      }
-    });
+    const results = response.data.web.results.map((r) => ({
+      title: r.title,
+      url: r.url,
+      snippet: r.description,
+    }));
 
     res.json(results);
   } catch (err) {
