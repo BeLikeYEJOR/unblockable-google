@@ -15,5 +15,8 @@
     "cheerio": "^1.1.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.10"
   }
 }
