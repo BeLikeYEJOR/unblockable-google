@@ -84,6 +84,31 @@
         background-color: #004085;
         transform: scale(1);
       }
+      .result-item {
+        background: #fff;
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin: 10px 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.2s ease;
+      }
+
+      .result-item:hover {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .result-item h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #1a0dab;
+        text-decoration: underline;
+      }
+
+      .result-item p {
+        margin-top: 8px;
+        font-size: 14px;
+        color: #4d5156;
+      }
     </style>
   </head>
   <body>
@@ -116,13 +141,14 @@
       SearchBtn.addEventListener("click", () => {
         let searchValue = SearchBar.value;
 
-        window.location.href = `${window.location.href}search?q=${searchValue}`;
+        window.location.href = `/search?q=${encodeURIComponent(searchValue)}`;
       });
-    </script>
-    <script>
-      if (window.top !== window.self) {
-        window.stop();
-      }
+      SearchBar.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          let searchValue = SearchBar.value;
+          window.location.href = `${window.location.href}search?q=${searchValue}`;
+        }
+      });
     </script>
   </body>
 </html>

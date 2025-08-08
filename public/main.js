@@ -24,21 +24,24 @@ if (window.location.pathname.endsWith("/search")) {
           const resultElement = document.createElement("div");
 
           resultElement.innerHTML = `
-                <h3><button class="open-btn" data-url="${result.url}">${result.title}</button></h3>
-                <p>${result.snippet}</p>`;
+  <div class="result-item">
+    <h3><button class="result-link" data-url="${result.url}">${result.title}</button></h3>
+
+    <p>${result.snippet}</p>
+  </div>`;
 
           container.appendChild(resultElement);
         });
 
-        document.querySelectorAll(".open-btn").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
+        document.querySelectorAll(".result-link").forEach((btn) => {
+          btn.addEventListener("click", () => {
             container.innerHTML = "";
             iframe.style = "display: block";
             let rawUrl = btn.dataset.url;
             if (!rawUrl.startsWith("http")) {
               rawUrl = "https://" + rawUrl;
             }
-            iframe.src = `/proxy?url=${encodeURIComponent(rawUrl)}`;
+            iframe.src = `/puppet-proxy?url=${encodeURIComponent(rawUrl)}`;
           });
         });
       });
